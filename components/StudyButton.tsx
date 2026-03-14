@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function StudyButton() {
@@ -8,24 +8,37 @@ export default function StudyButton() {
   const [message, setMessage] = useState("");
   const router = useRouter();
 
+  useEffect(() => {
+    const lastStudied = localStorage.getItem("lastStudied");
+    if (lastStudied) {
+      const today = new Date().toLocaleDateString();
+      if (lastStudied === today) {
+        setStatus("already");
+        setMessage("You've already studied today. Great job!");
+      }
+    }
+  }, []);
+
   const handleClick = async () => {
     if (status === "loading") return;
     setStatus("loading");
 
     try {
-      const res = await fetch("/api/study", { method: "POST" });
-      const data = await res.json();
+      const today = new Date().toLocaleDateString();
+      const lastStudied = localStorage.getItem("lastStudied");
 
-      if (res.status === 409) {
+      if (lastStudied === today) {
         setStatus("already");
-        setMessage(data.message);
-      } else if (res.ok) {
+        setMessage("You've already studied today. Great job!");
+      } else {
+        localStorage.setItem("lastStudied", today);
+        const history = JSON.parse(localStorage.getItem("studyHistory") || "[]");
+        history.push(new Date().toISOString());
+        localStorage.setItem("studyHistory", JSON.stringify(history));
         setStatus("success");
-        setMessage(data.message);
+        setMessage("Study session logged successfully!");
         // Refresh server components after a short celebration
         setTimeout(() => router.refresh(), 1200);
-      } else {
-        throw new Error("Unexpected error");
       }
     } catch {
       setStatus("error");

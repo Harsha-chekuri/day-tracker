@@ -1,16 +1,27 @@
-import { readData, computeStreak, formatDate } from "@/lib/streakLogic";
+'use client';
+
+import { useEffect, useState } from 'react';
+import { computeStreak, formatDate } from "@/lib/streakLogic";
 import StreakCard from "@/components/StreakCard";
 import StudyButton from "@/components/StudyButton";
 
-export const dynamic = "force-dynamic";
-
 export default function DashboardPage() {
-  const data = readData();
-  const sorted = [...data.dates].sort();
-  const streak = computeStreak(sorted);
-  const totalDays = sorted.length;
-  const lastStudied =
-    sorted.length > 0 ? formatDate(sorted[sorted.length - 1]) : null;
+  const [streak, setStreak] = useState(0);
+  const [totalDays, setTotalDays] = useState(0);
+  const [lastStudied, setLastStudied] = useState<string | null>(null);
+
+  useEffect(() => {
+    const history = JSON.parse(localStorage.getItem("studyHistory") || "[]");
+    const sorted = [...history].sort();
+    const currentStreak = computeStreak(sorted);
+    const totalSessions = sorted.length;
+    const lastSession =
+      sorted.length > 0 ? formatDate(sorted[sorted.length - 1]) : null;
+
+    setStreak(currentStreak);
+    setTotalDays(totalSessions);
+    setLastStudied(lastSession);
+  }, []);
 
   return (
     <div className="space-y-10">

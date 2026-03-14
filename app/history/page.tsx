@@ -1,17 +1,31 @@
-import { readData, formatDate, computeStreak } from "@/lib/streakLogic";
+'use client';
+
+import { useEffect, useState } from 'react';
+import { computeStreak, formatDate } from "@/lib/streakLogic";
 import HistoryList from "@/components/HistoryList";
 import Link from "next/link";
 
-export const dynamic = "force-dynamic";
+interface HistoryItem {
+  iso: string;
+  formatted: string;
+}
 
 export default function HistoryPage() {
-  const data = readData();
-  const sorted = [...data.dates].sort();
-  const streak = computeStreak(sorted);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [streak, setStreak] = useState(0);
 
-  const history = [...sorted]
-    .reverse()
-    .map((iso) => ({ iso, formatted: formatDate(iso) }));
+  useEffect(() => {
+    const studyHistory = JSON.parse(localStorage.getItem('studyHistory') || '[]');
+    const sorted = [...studyHistory].sort();
+    const currentStreak = computeStreak(sorted);
+    
+    const formattedHistory = [...sorted]
+      .reverse()
+      .map((iso) => ({ iso, formatted: formatDate(iso) }));
+
+    setHistory(formattedHistory);
+    setStreak(currentStreak);
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -51,8 +65,8 @@ export default function HistoryPage() {
           <div className="w-px bg-ash-dark" />
           <div>
             <p className="text-xs font-mono tracking-widest uppercase text-ink-muted">First Session</p>
-            <p className="font-display font-bold text-xl text-ink">
-              {formatDate(sorted[0])}
+            <p className="font-display font-bold text-2xl text-ink">
+              {history.length > 0 ? history[history.length - 1].formatted : ''}
             </p>
           </div>
         </div>
