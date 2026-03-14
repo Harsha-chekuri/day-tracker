@@ -16,7 +16,7 @@ export default function DashboardPage() {
     const currentStreak = computeStreak(sorted);
     const totalSessions = sorted.length;
     const lastSession =
-      sorted.length > 0 ? formatDate(sorted[sorted.length - 1]) : null;
+      sorted.length > 0 ? sorted[sorted.length - 1] : null;
 
     setStreak(currentStreak);
     setTotalDays(totalSessions);
@@ -56,7 +56,7 @@ export default function DashboardPage() {
         />
         <StreakCard
           label="Last Studied"
-          value={lastStudied ?? "—"}
+          value={lastStudied ? formatDate(lastStudied) : "—"}
           delay={160}
         />
       </div>
