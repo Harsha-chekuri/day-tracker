@@ -11,7 +11,13 @@ export function todayString(): string {
 
 /** Formats "YYYY-MM-DD" → "14 March 2026" */
 export function formatDate(iso: string): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+    return "Invalid Date";
+  }
   const [y, m, d] = iso.split("-").map(Number);
+    if (isNaN(y) || isNaN(m) || isNaN(d)) {
+    return "Invalid Date";
+  }
   return new Date(y, m - 1, d).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "long",

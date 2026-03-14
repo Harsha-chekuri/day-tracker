@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { todayString } from "@/lib/streakLogic";
 
 export default function StudyButton() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "already" | "error">("idle");
@@ -11,7 +12,7 @@ export default function StudyButton() {
   useEffect(() => {
     const lastStudied = localStorage.getItem("lastStudied");
     if (lastStudied) {
-      const today = new Date().toLocaleDateString();
+      const today = todayString();
       if (lastStudied === today) {
         setStatus("already");
         setMessage("You've already studied today. Great job!");
@@ -24,7 +25,7 @@ export default function StudyButton() {
     setStatus("loading");
 
     try {
-      const today = new Date().toLocaleDateString();
+      const today = todayString();
       const lastStudied = localStorage.getItem("lastStudied");
 
       if (lastStudied === today) {
@@ -33,8 +34,14 @@ export default function StudyButton() {
       } else {
         localStorage.setItem("lastStudied", today);
         const history = JSON.parse(localStorage.getItem("studyHistory") || "[]");
-        history.push(new Date().toISOString());
+        
+        // Ensure we don't add a duplicate for the same day
+        if (!history.includes(today)) {
+          history.push(today);
+        }
+
         localStorage.setItem("studyHistory", JSON.stringify(history));
+		    window.dispatchEvent(new Event("storage"));
         setStatus("success");
         setMessage("Study session logged successfully!");
         // Refresh server components after a short celebration

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { computeStreak, formatDate } from "@/lib/streakLogic";
 import StreakCard from "@/components/StreakCard";
 import StudyButton from "@/components/StudyButton";
@@ -10,18 +10,32 @@ export default function DashboardPage() {
   const [totalDays, setTotalDays] = useState(0);
   const [lastStudied, setLastStudied] = useState<string | null>(null);
 
-  useEffect(() => {
+  const updateStats = useCallback(() => {
     const history = JSON.parse(localStorage.getItem("studyHistory") || "[]");
     const sorted = [...history].sort();
     const currentStreak = computeStreak(sorted);
     const totalSessions = sorted.length;
-    const lastSession =
-      sorted.length > 0 ? sorted[sorted.length - 1] : null;
+    const lastSession = sorted.length > 0 ? sorted[sorted.length - 1] : null;
 
     setStreak(currentStreak);
     setTotalDays(totalSessions);
     setLastStudied(lastSession);
   }, []);
+
+  useEffect(() => {
+    updateStats();
+
+    const handleStorageChange = () => {
+      updateStats();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  }, [updateStats]);
+
 
   return (
     <div className="space-y-10">
